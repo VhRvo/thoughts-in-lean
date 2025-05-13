@@ -30,9 +30,7 @@ theorem neat.insert_not_empty : ∀ (m : HashSet α), m.insert v ≠ ∅ := by
   -- apply congr_arg (HashSet.contains) at h; apply congr_fun at h
   specialize h v
   conv at h =>
-    lhs
-    simp
-  conv at h =>
-    rhs
-    simp
+    congr
+    { simp }
+    { simp }
   simp at h
