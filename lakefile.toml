@@ -1,0 +1,14 @@
+name = "thoughts-in-lean"
+version = "0.1.0"
+defaultTargets = ["thoughts-in-lean"]
+
+[[lean_lib]]
+name = "ThoughtsInLean"
+
+[[lean_exe]]
+name = "thoughts-in-lean"
+root = "Main"
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
