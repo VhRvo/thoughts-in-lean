@@ -34,11 +34,13 @@ theorem iso_iff_unique_preimage (f : A → B) :
     { intro a
       unfold g
       obtain ⟨w, h1, h2⟩ := h (f a)
+      -- ⊢ Exists.fst (Exists.intro w ⟨h1, h2⟩) = a
       symm
       exact h2 a h1 }
     { intro b
       unfold g
       obtain ⟨w, h1, _⟩ := h b
+      -- ⊢ f (Exists.fst (Exists.intro w ⟨h1, _⟩)) = b
       exact h1 } }
 
 example (he : ∃! (x : A), x = x) : A := by
