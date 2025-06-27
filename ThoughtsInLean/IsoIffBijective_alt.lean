@@ -17,10 +17,10 @@ theorem monic_iff_injective₁ (f : A → B) :
   := by
   constructor
   { intro h a₁ a₂ hf
+    -- The point of this proof is there is at least a element in some set
     let a₁' := fun _ : Bool => a₁
     let a₂' := fun _ : Bool => a₂
     have hf' : f ∘ a₁' = f ∘ a₂' :=
-      -- funext (fun b => hf)
       funext (fun b =>
         match b with
         | .true => hf
