@@ -63,6 +63,7 @@ theorem iso_iff_bijective (f : A → B) :
     { intro a
       unfold g
       obtain ⟨_, h2⟩ := Classical.choose_spec (h (f a))
+      -- change Classical.choose (h b) with a'
       symm
       exact h2 a (Eq.refl (f a)) }
     { intro b
