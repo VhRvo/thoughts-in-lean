@@ -10,7 +10,32 @@ set_option pp.proofs true
 
 variable {A B : Type}
 
-theorem monic_iff_injective (f : A → B) :
+-- interesting
+theorem monic_iff_injective₁ (f : A → B) :
+    (∀ (C : Type) (s t : C → A), f ∘ s = f ∘ t → s = t) ↔
+    (∀ a₁ a₂ : A, f a₁ = f a₂ → a₁ = a₂)
+  := by
+  constructor
+  { intro h a₁ a₂ hf
+    let a₁' := fun _ : Bool => a₁
+    let a₂' := fun _ : Bool => a₂
+    have hf' : f ∘ a₁' = f ∘ a₂' :=
+      -- funext (fun b => hf)
+      funext (fun b =>
+        match b with
+        | .true => hf
+        | .false => hf)
+    have h' := h Bool a₁' a₂' hf'
+    exact congr_fun h' true }
+  { intro h C s t hfsft
+    have hst : ∀ x : C, s x = t x := by
+      intro x
+      have hfst : f (s x) = f (t x) :=
+        congr_fun hfsft x
+      exact h (s x) (t x) hfst
+    exact funext hst }
+
+theorem monic_iff_injective₂ (f : A → B) :
     (∀ (C : Type) (s t : C → A), f ∘ s = f ∘ t → s = t) ↔
     (∀ a₁ a₂ : A, f a₁ = f a₂ → a₁ = a₂)
   := by
