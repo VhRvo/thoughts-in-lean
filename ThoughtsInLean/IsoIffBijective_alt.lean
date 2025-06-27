@@ -16,12 +16,21 @@ theorem monic_iff_injective (f : A → B) :
   := by
   constructor
   { intro h a₁ a₂ hf
-    let a₁' := fun () => a₁
-    let a₂' := fun () => a₂
-    have hfa₁a₂ : f (a₁' ()) = f (a₂' ()) := hf
-    have hf' : f ∘ a₁' = f ∘ a₂' := funext (fun () => hfa₁a₂)
-    have h' := h Unit a₁' a₂' hf'
-    exact congr_fun h' () }
+    -- prove if the following defintions are using have instead of let
+    have a₁' := fun () => a₁
+    have ha₁ : a₁' () = a₁ := by
+      sorry
+      -- rfl
+    have a₂' := fun () => a₂
+    have comp_eq : f ∘ a₁' = f ∘ a₂' := by
+      funext ()
+      simp
+      sorry
+      -- rw [a₁']
+      -- unfold [a₁']
+      -- rw [a₁', a₂']
+      -- exact hf
+    sorry }
   { intro h C s t hfsft
     have hst : ∀ x : C, s x = t x := by
       intro x
@@ -30,6 +39,7 @@ theorem monic_iff_injective (f : A → B) :
       exact h (s x) (t x) hfst
     exact funext hst }
 
+-- use `choose` and `choose_spec` functions instead of `choose` tactic.
 theorem iso_iff_bijective (f : A → B) :
     (∃ g : B → A, LeftInverse g f ∧ RightInverse g f) ↔
     ∀ b : B, ∃! a : A, f a = b := by
@@ -47,13 +57,15 @@ theorem iso_iff_bijective (f : A → B) :
         _  = g b := by rw [ha']
         _  = a := by rfl } }
   { intro h
-    choose g h using h
+    let g := fun b => Classical.choose (h b)
     use g
     constructor
     { intro a
-      obtain ⟨_, h2⟩ := h (f a)
+      unfold g
+      obtain ⟨_, h2⟩ := Classical.choose_spec (h (f a))
       symm
       exact h2 a (Eq.refl (f a)) }
     { intro b
-      obtain ⟨h1, _⟩ := h b
+      unfold g
+      obtain ⟨h1, _⟩ := Classical.choose_spec (h b)
       exact h1 } }
