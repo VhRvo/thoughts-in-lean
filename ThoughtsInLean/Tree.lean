@@ -45,13 +45,9 @@ def natRec (nat : Nat) (P : Nat → Prop) (p : (nat : Nat) → (m : @Nat.below P
 
 -- theorem acyclic (n : Nat) : n ≠ .succ (.succ (.succ n)) :=
 
+-- inductive Vector (α : Type) : Nat → Type where
+--   | VNil : Vector α 0
+--   | VCos : α → {n : Nat} → Vector α n → Vector α (.succ n)
 
-
-
-
-inductive Vector (α : Type) : Nat → Type where
-  | VNil : Vector α 0
-  | VCos : α → {n : Nat} → Vector α n → Vector α (.succ n)
-
-#print Vector.rec
-#print Vector.recOn
+-- #print Vector.rec
+-- #print Vector.recOn

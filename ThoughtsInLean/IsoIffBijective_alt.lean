@@ -10,6 +10,120 @@ set_option pp.proofs true
 
 variable {A B : Type}
 
+theorem epic_iff_surjective₃ [DecidableEq B] (f : A → B) :
+    (∀ (C : Type) (s t : B → C), s ∘ f = t ∘ f → s = t) ↔ (∀ b, ∃ a : A, f a = b) := by
+  constructor
+  { intro h b
+    contrapose! h
+    use Bool, (fun _ => true), (fun x => x ≠ b)
+    constructor
+    { funext a
+      unfold Function.comp
+      simp -- what behind the `simp`
+      exact h a }
+    { intro hf
+      let h₁ := congr_fun hf b
+      simp at h₁ } }
+  { intro h C s t heq
+    funext b
+    -- what? `rfl` do magic thing.
+    obtain ⟨a, rfl⟩ := h b
+    exact congr_fun heq a }
+
+theorem epic_iff_surjective₂ [DecidableEq B] (f : A → B) :
+    (∀ (C : Type) (s t : B → C), s ∘ f = t ∘ f → s = t) ↔ (∀ b, ∃ a : A, f a = b) := by
+  constructor
+  { intro h b
+    contrapose! h
+    use Bool, (fun _ => true), (fun x => x ≠ b)
+    constructor
+    { funext a
+      unfold Function.comp
+      simp
+      exact h a }
+    { intro hf
+      let h₁ := congr_fun hf b
+      simp at h₁ } }
+  { intro h C s t heq
+    funext b
+    -- what? `rfl` do magic thing.
+    obtain ⟨a, rfl⟩ := h b
+    exact congr_fun heq a }
+
+theorem epic_iff_surjective₁ [DecidableEq B] (f : A → B) :
+    (∀ (C : Type) (s t : B → C), s ∘ f = t ∘ f → s = t) ↔ (∀ b, ∃ a : A, f a = b)
+  := by
+  constructor
+  { intro h b
+    contrapose! h
+    let C := Bool
+    let s : B → C := fun _ => true
+    let t : B → C := fun x => if x = b then false else true
+    use C, s, t
+    constructor
+    { funext a
+      simp [s, t]
+      rw [if_neg]
+      exact h a }
+    { intro h₁
+      have h₂ := congr_fun h₁ b
+      simp [s, t] at h₂ } }
+  { intro h C s t heq
+    funext b
+    obtain ⟨w, hw⟩ := h b
+    nth_rewrite 1 [←hw]
+    unfold Function.comp at heq
+    let h := congr_fun heq w
+    rw [congr_fun heq w, hw] }
+
+theorem epic_iff_surjective [DecidableEq B] (f : A → B) :
+    (∀ (C : Type) (s t : B → C), s ∘ f = t ∘ f → s = t) ↔ (∀ b, ∃ a : A, f a = b)
+  := by
+  constructor
+  { intro h b
+    contrapose! h
+    let C := Bool
+    let s : B → C := fun _ => true
+    let t : B → C := fun x => if x = b then false else true
+    use C, s, t
+    constructor
+    { funext a
+      simp [s, t]
+      rw [if_neg]
+      exact h a }
+    { intro h₁
+      have h₂ := congr_fun h₁ b
+      simp [s, t] at h₂ } }
+  { intro h C s t heq
+    funext b
+    obtain ⟨w, hw⟩ := h b
+    nth_rewrite 1 [←hw]
+    unfold Function.comp at heq
+    let h := congr_fun heq w
+    rw [congr_fun heq w, hw] }
+
+theorem epic_iff_onto (f : A → B) :
+    Surjective f ↔ Set.range f = Set.univ
+  := by
+  unfold Surjective Set.range Set.univ
+  constructor
+  { intro h
+    ext x
+    constructor
+    { intro _
+      trivial }
+    { intro _
+      exact h x } }
+  -- My stupid solution
+  { intro h b
+    contrapose! h
+    intro h_set_eq
+    have h₁ : b ∈ {_a | True} := trivial
+    rw [←h_set_eq] at h₁
+    obtain ⟨w, hw⟩ := h₁
+    apply h w
+    exact hw }
+
 -- interesting
 theorem monic_iff_injective₁ (f : A → B) :
     (∀ (C : Type) (s t : C → A), f ∘ s = f ∘ t → s = t) ↔
