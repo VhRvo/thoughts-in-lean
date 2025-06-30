@@ -27,6 +27,15 @@ def Image (f : A → B) : Set B
 
 #print Set.range
 
+theorem epic_if_split_epic (f : A → B) :
+    SplitEpic f → Epic f
+  := by
+  unfold SplitEpic HasRightInverse RightInverse LeftInverse Epic
+  intro ⟨g, h⟩ C s t heq
+  funext x
+  rw [←h x]
+  apply congr_fun heq (g x)
+
 theorem monic_if_split_monic (f : A → B) :
     SplitMonic f →
     Monic f
