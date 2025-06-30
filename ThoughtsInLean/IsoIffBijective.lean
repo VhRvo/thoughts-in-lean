@@ -11,21 +11,26 @@ set_option pp.proofs true
 
 variable {A B : Type}
 
+
 def Monic (f : A → B) := ∀ (C : Type) (s t : C → A), f ∘ s = f ∘ t → s = t
 
+
 def SplitMonic (f : A → B) := HasLeftInverse f
+
 
 def Isomorphic f :=
   ∃ g : B → A, LeftInverse g f ∧ RightInverse g f
 
+
 def Epic (f : A → B) := ∀ (C : Type) (s t : B → C), s ∘ f = t ∘ f → s = t
 
+
 def SplitEpic (g : B → A) := HasRightInverse g
+
 
 def Image (f : A → B) : Set B
   := { b : B | ∃ a, b = f a }
 
-#print Set.range
 
 theorem epic_if_split_epic (f : A → B) :
     SplitEpic f → Epic f
@@ -35,6 +40,7 @@ theorem epic_if_split_epic (f : A → B) :
   funext x
   rw [←h x]
   apply congr_fun heq (g x)
+
 
 theorem monic_if_split_monic (f : A → B) :
     SplitMonic f →
@@ -52,13 +58,23 @@ theorem monic_if_split_monic (f : A → B) :
     rw [← hLI (s c), h2, hLI (t c)]
   exact funext h
 
--- theorem left_inverse_if_monic (f : A → B) :
---     Monic f →
---     SplitMonic f
---   := by
---   unfold SplitMonic HasLeftInverse LeftInverse
---   intro hex
---   sorry
+
+theorem left_inverse_if_monic (f : A → B) :
+    Monic f →
+    SplitMonic f
+  := by
+  unfold SplitMonic HasLeftInverse LeftInverse
+  intro hex
+  sorry
+
+
+theorem right_inverse_if_epic (f : A → B) :
+    Epic f → SplitEpic f
+  := by
+  unfold SplitEpic Epic HasRightInverse RightInverse LeftInverse
+  intro h
+  sorry
+
 
 theorem monic_iff_injective (f : A → B) :
     Monic f ↔ Injective f
@@ -80,6 +96,7 @@ theorem monic_iff_injective (f : A → B) :
       exact h hfst
     exact funext hst }
 
+
 theorem epic_iff_surjective [DecidableEq B] (f : A → B) :
     (∀ (C : Type) (s t : B → C), s ∘ f = t ∘ f → s = t) ↔ (∀ b, ∃ a : A, f a = b) := by
   constructor
@@ -98,6 +115,7 @@ theorem epic_iff_surjective [DecidableEq B] (f : A → B) :
     obtain ⟨w, hw⟩ := h b
     rw [←hw]
     exact congr_fun heq w }
+
 
 theorem epic_iff_onto (f : A → B) :
     Surjective f ↔ Set.range f = Set.univ
@@ -118,6 +136,7 @@ theorem epic_iff_onto (f : A → B) :
       exact hT
     obtain ⟨a, ha⟩ := hex
     use a }
+
 
 theorem isomorphic_iff_bijective (f : A → B) :
     Isomorphic f ↔
@@ -146,17 +165,18 @@ theorem isomorphic_iff_bijective (f : A → B) :
       obtain ⟨h1, _⟩ := h b
       exact h1 } }
 
+
 theorem monic_if_isomorphic (f : A → B) :
     Isomorphic f → Monic f
   := by
   unfold Isomorphic RightInverse LeftInverse Monic
-  intro hex C s t h
+  intro ⟨w, hw, _⟩
+  exact monic_if_split_monic f ⟨w, hw⟩
 
-  sorry
 
 theorem epic_if_isomorphic (f : A → B) :
     Isomorphic f → Epic f
   := by
   unfold Isomorphic RightInverse LeftInverse Epic
-  intro hex C s t h
-  sorry
+  intro ⟨w, _, hw⟩
+  exact epic_if_split_epic f ⟨w, hw⟩
