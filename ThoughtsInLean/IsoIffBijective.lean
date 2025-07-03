@@ -9,7 +9,7 @@ open Function
 
 set_option pp.proofs true
 
-variable {A B : Type}
+variable {A B : Type*}
 
 
 def Monic (f : A → B) := ∀ (C : Type) (s t : C → A), f ∘ s = f ∘ t → s = t
