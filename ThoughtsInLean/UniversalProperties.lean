@@ -4,137 +4,285 @@ import Mathlib.Logic.Function.Basic
 import Mathlib.Logic.Equiv.Basic
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Algebra.Group.Hom.Defs
+import Init.Prelude
 
 open Function
+#print id
 
-def Initial (A : Type) := ∀ X : Type, ∃ f : A → X, ∀ g : A → X, f = g
+def Initial (α : Type) := ∀ X : Type, ∃ f : α → X, ∀ g : α → X, f = g
 
-def Terminal (A : Type) := ∀ X : Type, ∃ f : X → A, ∀ g : X → A, f = g
+def Terminal (α : Type) := ∀ X : Type, ∃ f : X → α, ∀ g : X → α, f = g
 
-def Isomorphic {A : Type} {B : Type} (f : A → B) :=
-  ∃ g : B → A, LeftInverse g f ∧ RightInverse g f
+-- def LocalTerminal (α : Type) [LE α] (t : α) := ∃ p : α → Prop , ∀ x, p x → x ≤ t
 
-def Iso (A : Type) (B : Type) :=
-  ∃ f : A → B, Isomorphic f
+def Isomorphic {α β : Type} (f : α → β) :=
+  ∃ g : β → α, g ∘ f = id ∧ f ∘ g = id
 
-def UniIso (A : Type) (B : Type) :=
-  ∃ f : A → B, Isomorphic f ∧ (∀ g : A → B, Isomorphic g → f = g)
+def Iso (α β : Type) :=
+  ∃ f : α → β, Isomorphic f
+
+def UniIso (α β : Type) :=
+  ∃ f : α → β, Isomorphic f ∧ (∀ g : α → β, Isomorphic g → f = g)
+
+structure Product.object {α β : Type} (γ : Type) where
+  π₀ : γ → α
+  π₁ : γ → β
+
+structure Product.arrow
+    {α β γ γ' : Type}
+    (C : @Product.object α β γ)
+    (D : @Product.object α β γ') where
+  arr : γ → γ'
+  hom : C.π₀ = D.π₀ ∘ arr ∧ C.π₁ = D.π₁ ∘ arr
+
+def Product.identity
+    {α β γ : Type}
+    {obj : @Product.object α β γ} : Product.arrow obj obj :=
+  Product.arrow.mk id (by
+    constructor
+    { symm; exact Function.comp_id obj.π₀ }
+    { symm; exact Function.comp_id obj.π₁ })
+
+def Product.compose
+    {α β γα γβ γγ : Type}
+    {A : @Product.object α β γα}
+    {B : Product.object γβ}
+    {C : Product.object γγ}
+    : Product.arrow B C → Product.arrow A B → Product.arrow A C := by
+  intro g f
+  apply Product.arrow.mk (g.arr ∘ f.arr)
+  constructor
+  { rw [f.hom.left, g.hom.left, Function.comp_assoc] }
+  { rw [f.hom.right, g.hom.right, Function.comp_assoc] }
+
+def Product.id_comp
+    {α β γα γβ : Type}
+    {A : @Product.object α β γα}
+    {B : Product.object γβ}
+    {f : Product.arrow A B}
+    : Product.compose Product.identity f = f := by
+  unfold Product.compose Product.identity
+  simp [Function.id_comp f.arr]
+
+def Product.id_comp₁
+    {α β γα γβ : Type}
+    {A : @Product.object α β γα}
+    {B : Product.object γβ}
+    {f : Product.arrow A B}
+    : Product.compose Product.identity f = f := by
+  cases f with
+  | mk f_arr f_hom =>
+    unfold Product.compose Product.identity
+    rfl
+
+def Product.comp_id
+    {α β γα γβ : Type}
+    {A : @Product.object α β γα}
+    {B : Product.object γβ}
+    {f : Product.arrow A B}
+    : Product.compose f Product.identity = f := by
+  unfold Product.compose Product.identity
+  simp [Function.comp_id f.arr]
+
+#print comp_assoc
+
+def Product.comp_assoc
+    {α β γα γβ γγ γγ' : Type}
+    {A : @Product.object α β γα}
+    {B : Product.object γβ}
+    {C : Product.object γγ}
+    {D : Product.object γγ'}
+    {f : Product.arrow C D}
+    {g : Product.arrow B C}
+    {h : Product.arrow A B} :
+    Product.compose (Product.compose f g) h =
+    Product.compose f (Product.compose g h) := by
+  unfold Product.compose
+  simp [Function.comp_assoc]
+
+def Product.Isomorphic
+    {α β γ γ' : Type}
+    {C : @Product.object α β γ} {D : Product.object γ'}
+    (f : Product.arrow C D) :=
+  ∃ (g : Product.arrow D C),
+    Product.compose g f = Product.identity ∧
+    Product.compose f g = Product.identity
+
+def Product.Iso
+    {α β γ γ' : Type}
+    (C : @Product.object α β γ) (D : Product.object γ') :=
+  ∃ (f : Product.arrow C D), Product.Isomorphic f
+
+def Product.UniIso
+    {α β γ γ' : Type}
+    (C : @Product.object α β γ) (D : Product.object γ') :=
+  ∃ (f : Product.arrow C D),
+    Product.Isomorphic f ∧ (∀ f' : Product.arrow C D, Product.Isomorphic f' → f = f')
+
+def IsProduct
+   {α β γ : Type}
+   (C : @Product.object α β γ) :=
+  ∀ (γ' : Type) (D : @Product.object α β γ'),
+  ∃ k : Product.arrow D C,
+  ∀ k' : Product.arrow D C, k = k'
+  -- ∃! k : γ' → γ, D.π₀ = C.π₀ ∘ k ∧ D.π₁ = C.π₁ ∘ k
+
+def Void (α : Type) := ∀ _ : α, False
+
+def Single (α : Type) := ∃ x : α, ∀ y : α, x = y
 
 
-theorem uni_iso_if_initial : Initial A → Initial B → UniIso A B:= by
-  unfold Initial UniIso Isomorphic RightInverse LeftInverse
+theorem uni_iso_if_initial : Initial α → Initial β → UniIso α β:= by
+  unfold Initial UniIso Isomorphic
   intro hIA hIB
-  obtain ⟨f, hf⟩ := hIA B
-  obtain ⟨g, hg⟩ := hIB A
+  obtain ⟨f, hf⟩ := hIA β
+  obtain ⟨g, hg⟩ := hIB α
   use f
   constructor
   { use g
     constructor
-    { intro a
-      obtain ⟨id', hid'⟩ := hIA A
-      apply congr_fun (f := (g ∘ f)) (g := id)
+    { obtain ⟨id', hid'⟩ := hIA α
       rw [←hid' (g ∘ f), ← hid' id] }
-    { intro b
-      obtain ⟨id', hid'⟩ := hIB B
-      apply congr_fun (f := (f ∘ g)) (g := id)
+    { obtain ⟨id', hid'⟩ := hIB β
       rw [←hid' (f ∘ g), ←hid' id] } }
   { intro g _
     exact hf g }
 
 
-theorem initial_if_iso : Initial A → Iso A B → Initial B := by
-  unfold Initial Iso Isomorphic RightInverse LeftInverse
+theorem initial_if_iso : Initial α → Iso α β → Initial β := by
+  unfold Initial Iso Isomorphic
   intro hIA hIso X
   obtain ⟨fAX, hfAX⟩ := hIA X
   obtain ⟨fAB, ⟨ fBA, _, hRI ⟩⟩ := hIso
   use fAX ∘ fBA
   intro fBX
   rw [hfAX (fBX ∘ fAB)]
-  funext b
-  simp
-  rw [hRI b]
+  rw [Function.comp_assoc, hRI, Function.comp_id]
 
-theorem initial_if_uni_iso : Initial A → UniIso A B → Initial B := by
-  unfold Initial UniIso Isomorphic RightInverse LeftInverse
+
+theorem initial_if_uni_iso : Initial α → UniIso α β → Initial β := by
+  unfold Initial UniIso Isomorphic
   intro hIA hUniIso
   obtain ⟨fAB, hIso, _hUnique ⟩ := hUniIso
   exact initial_if_iso hIA ⟨ fAB, hIso ⟩
 
 
-theorem uni_iso_if_terminal : Terminal A → Terminal B → UniIso A B:= by
-  unfold Terminal UniIso Isomorphic RightInverse LeftInverse
+theorem uni_iso_if_terminal : Terminal α → Terminal β → UniIso α β:= by
+  unfold Terminal UniIso Isomorphic
   intro hIA hIB
-  obtain ⟨f, hf⟩ := hIB A
-  obtain ⟨g, hg⟩ := hIA B
+  obtain ⟨f, hf⟩ := hIB α
+  obtain ⟨g, hg⟩ := hIA β
   use f
   constructor
   { use g
     constructor
-    { intro a
-      obtain ⟨id', hid'⟩ := hIA A
+    { funext a
+      obtain ⟨id', hid'⟩ := hIA α
       apply congr_fun (f := (g ∘ f)) (g := id)
       rw [←hid' (g ∘ f), ← hid' id] }
-    { intro b
-      obtain ⟨id', hid'⟩ := hIB B
+    { funext b
+      obtain ⟨id', hid'⟩ := hIB β
       apply congr_fun (f := (f ∘ g)) (g := id)
       rw [←hid' (f ∘ g), ←hid' id] } }
   { intro g _
     exact hf g }
 
 
-theorem terminal_if_iso : Terminal A → Iso A B → Terminal B := by
-  unfold Terminal Iso Isomorphic RightInverse LeftInverse
+theorem terminal_if_iso : Terminal α → Iso α β → Terminal β := by
+  unfold Terminal Iso Isomorphic
   intro hTA hIso X
   obtain ⟨fXA, hfXA⟩ := hTA X
   obtain ⟨fAB, ⟨ fBA, _, hRI ⟩⟩ := hIso
   use fAB ∘ fXA
   intro fXB
-  rw [hfXA (fBA ∘ fXB)]
-  funext b
-  simp
-  rw [hRI (fXB b)]
+  rw [hfXA (fBA ∘ fXB), ←comp_assoc, hRI, id_comp]
 
 
-theorem terminal_if_uni_iso : Terminal A → UniIso A B → Terminal B := by
-  unfold Terminal UniIso Isomorphic RightInverse LeftInverse
+theorem terminal_if_uni_iso : Terminal α → UniIso α β → Terminal β := by
+  unfold Terminal UniIso Isomorphic
   intro hTA hUniIso
   obtain ⟨fAB, hIso, _hUnique ⟩ := hUniIso
   exact terminal_if_iso hTA ⟨ fAB, hIso ⟩
 
 
-def Void (A : Type) := ∀ _ : A, False
-
-
-def Single (A : Type) := ∃ x : A, ∀ y : A, x = y
-
-
-theorem void_uni_iso_void : Void A → Void B → UniIso A B := by
-  unfold Void UniIso Isomorphic RightInverse LeftInverse
+theorem void_uni_iso_void : Void α → Void β → UniIso α β := by
+  unfold Void UniIso Isomorphic
   intro hA hB
-  let f : A → B := fun a => (hA a).elim
-  let g : B → A := fun b => (hB b).elim
+  let f : α → β := fun a => (hA a).elim
+  let g : β → α := fun b => (hB b).elim
   use f
   constructor
   { use g
     constructor
-    { intro a
+    { funext a
       exact (hA a).elim }
-    { intro b
+    { funext b
       exact (hB b).elim } }
   { intro _ _
     funext a
     exact (hA a).elim }
 
 
-theorem single_uni_iso_single : Single A → Single B → UniIso A B := by
-  unfold Single UniIso Isomorphic RightInverse LeftInverse
+theorem single_uni_iso_single : Single α → Single β → UniIso α β := by
+  unfold Single UniIso Isomorphic
   intro ⟨a, ha⟩ ⟨b, hb⟩
-  let f : A → B := fun _ => b
-  let g : B → A := fun _ => a
+  let f : α → β := fun _ => b
+  let g : β → α := fun _ => a
   use f
   constructor
-  { use g }
-  { intro f' ⟨g', _, _ ⟩
+  { use g
+    constructor
+    { funext x
+      unfold g
+      simp
+      exact ha x }
+    { funext x
+      unfold f
+      simp
+      exact hb x } }
+  { intro f' _
     funext x
     unfold f
     exact hb (f' x) }
+
+
+theorem uni_iso_if_product
+    (C : @Product.object α β γ) (D : Product.object γ')
+    : IsProduct C → IsProduct D → Product.UniIso C D := by
+  unfold IsProduct Product.UniIso Product.Isomorphic
+  intro C.uni D.uni
+  obtain ⟨f, f.uni⟩ := D.uni γ C
+  obtain ⟨g, g.uni⟩ := C.uni γ' D
+  have hgf : g.arr ∘ f.arr = id := by
+    { obtain ⟨id', id'.uni⟩ := C.uni γ C
+      let id'_eq_comp := id'.uni (Product.compose g f)
+      let id'_eq_id := id'.uni Product.identity
+      let comp_eq_id := id'_eq_comp.symm.trans id'_eq_id
+      exact congr_arg Product.arrow.arr comp_eq_id }
+  have hfg : f.arr ∘ g.arr = id := by
+    { obtain ⟨id', id'.uni⟩ := D.uni γ' D
+      let id'_eq_comp := id'.uni (Product.compose f g)
+      let id'_eq_id := id'.uni Product.identity
+      let comp_eq_id := id'_eq_comp.symm.trans id'_eq_id
+      exact congr_arg Product.arrow.arr comp_eq_id }
+  use f
+  constructor
+  { use g
+    constructor
+    { unfold Product.compose Product.identity
+      simp [hgf] }
+    { unfold Product.compose Product.identity
+      simp [hfg] } }
+  { intro f' _
+    apply f.uni }
+
+theorem product_if_uni_iso
+    (C : @Product.object α β γ) (D : Product.object γ')
+    : IsProduct C → Product.UniIso C D → IsProduct D := by
+  unfold IsProduct Product.UniIso Product.Isomorphic
+  intro C.uni hUniIso γ'' D'
+  obtain ⟨g', hg'⟩ := C.uni γ'' D'
+  obtain ⟨f, ⟨ g'', _, hfg'' ⟩  , _ ⟩ := hUniIso
+  use Product.compose f g'
+  intro k'
+  rw [hg' (Product.compose g'' k'), ←Product.comp_assoc, hfg'', Product.id_comp]
