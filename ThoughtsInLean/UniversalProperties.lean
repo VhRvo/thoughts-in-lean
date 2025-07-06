@@ -253,28 +253,47 @@ theorem uni_iso_if_product
   intro C.uni D.uni
   obtain ⟨f, f.uni⟩ := D.uni γ C
   obtain ⟨g, g.uni⟩ := C.uni γ' D
-  have hgf : g.arr ∘ f.arr = id := by
+  have hgf : Product.compose g f = Product.identity := by
     { obtain ⟨id', id'.uni⟩ := C.uni γ C
-      let id'_eq_comp := id'.uni (Product.compose g f)
-      let id'_eq_id := id'.uni Product.identity
-      let comp_eq_id := id'_eq_comp.symm.trans id'_eq_id
-      exact congr_arg Product.arrow.arr comp_eq_id }
-  have hfg : f.arr ∘ g.arr = id := by
+      rw [←id'.uni Product.identity, id'.uni (Product.compose g f)] }
+  have hfg : Product.compose f g = Product.identity := by
     { obtain ⟨id', id'.uni⟩ := D.uni γ' D
-      let id'_eq_comp := id'.uni (Product.compose f g)
-      let id'_eq_id := id'.uni Product.identity
-      let comp_eq_id := id'_eq_comp.symm.trans id'_eq_id
-      exact congr_arg Product.arrow.arr comp_eq_id }
+      rw [←id'.uni Product.identity, id'.uni (Product.compose f g)] }
   use f
   constructor
-  { use g
-    constructor
-    { unfold Product.compose Product.identity
-      simp [hgf] }
-    { unfold Product.compose Product.identity
-      simp [hfg] } }
+  { use g }
   { intro f' _
-    apply f.uni }
+    exact f.uni f' }
+
+
+theorem uni'_if_product
+    (C : @Product.object α β γ) (D : @Product.object α β γ')
+    : IsProduct C → IsProduct D → Iso γ γ' := by
+  intro C.uni D.uni
+  obtain ⟨ f, ⟨ g, hgf, hfg⟩ , f.uni ⟩  := uni_iso_if_product C D C.uni D.uni
+  use f.arr
+  { use g.arr
+    constructor
+    { exact congr_arg Product.arrow.arr hgf }
+    { exact congr_arg Product.arrow.arr hfg } }
+
+
+-- Perhaps the following theorem is unprovable.
+theorem uni_iso'_if_product
+    (C : @Product.object α β γ) (D : @Product.object α β γ')
+    : IsProduct C → IsProduct D → UniIso γ γ' := by
+  intro C.uni D.uni
+  obtain ⟨ f, ⟨ g, hgf, hfg⟩ , f.uni ⟩  := uni_iso_if_product C D C.uni D.uni
+  use f.arr
+  constructor
+  { use g.arr
+    constructor
+    { exact congr_arg Product.arrow.arr hgf }
+    { exact congr_arg Product.arrow.arr hfg } }
+  { intro f' f'.iso
+    show f.arr = f'
+    sorry }
+
 
 theorem product_if_uni_iso
     (C : @Product.object α β γ) (D : Product.object γ')
