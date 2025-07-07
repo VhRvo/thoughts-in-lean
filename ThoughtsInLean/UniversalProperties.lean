@@ -337,7 +337,7 @@ theorem Product.Prod
     simp at he1 he2
     let result := congr_arg₂ Prod.mk he1 he2
     exact result
-  obtain ⟨ x, y ⟩ := k
-  { obtain ⟨x', _⟩ := k'
-    { simp
-      exact h } }
+  obtain ⟨arr,_⟩ := k
+  obtain ⟨arr', _⟩ := k'
+  simp
+  exact h
