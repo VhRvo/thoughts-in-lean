@@ -293,16 +293,25 @@ theorem uni_iso'_if_product
     sorry }
 
 
+theorem product_if_iso
+    (C : @Product.object α β γ) (D : Product.object γ')
+    : IsProduct C → Product.Iso C D → IsProduct D := by
+  unfold IsProduct Product.Iso Product.Isomorphic
+  intro C.uni hIso γ'' D'
+  obtain ⟨g', hg'⟩ := C.uni γ'' D'
+  obtain ⟨f, ⟨g'', _, hfg''⟩⟩ := hIso
+  use Product.compose f g'
+  intro k'
+  rw [hg' (Product.compose g'' k'), ←Product.comp_assoc, hfg'', Product.id_comp]
+
+
 theorem product_if_uni_iso
     (C : @Product.object α β γ) (D : Product.object γ')
     : IsProduct C → Product.UniIso C D → IsProduct D := by
   unfold IsProduct Product.UniIso Product.Isomorphic
-  intro C.uni hUniIso γ'' D'
-  obtain ⟨g', hg'⟩ := C.uni γ'' D'
-  obtain ⟨f, ⟨ g'', _, hfg'' ⟩  , _ ⟩ := hUniIso
-  use Product.compose f g'
-  intro k'
-  rw [hg' (Product.compose g'' k'), ←Product.comp_assoc, hfg'', Product.id_comp]
+  intro C.uni hUniIso
+  obtain ⟨f, f.iso , _ ⟩ := hUniIso
+  exact product_if_iso C D C.uni ⟨f, f.iso⟩
 
 
 theorem Product.Prod
