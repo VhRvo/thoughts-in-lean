@@ -84,8 +84,6 @@ def Product.comp_id
   unfold Product.compose Product.identity
   simp [Function.comp_id f.arr]
 
-#print comp_assoc
-
 def Product.comp_assoc
     {α β γα γβ γγ γγ' : Type}
     {A : @Product.object α β γα}
@@ -283,7 +281,7 @@ theorem uni_iso'_if_product
     (C : @Product.object α β γ) (D : @Product.object α β γ')
     : IsProduct C → IsProduct D → UniIso γ γ' := by
   intro C.uni D.uni
-  obtain ⟨ f, ⟨ g, hgf, hfg⟩ , f.uni ⟩  := uni_iso_if_product C D C.uni D.uni
+  obtain ⟨f, ⟨g, hgf, hfg⟩, f.uni⟩  := uni_iso_if_product C D C.uni D.uni
   use f.arr
   constructor
   { use g.arr
@@ -305,3 +303,41 @@ theorem product_if_uni_iso
   use Product.compose f g'
   intro k'
   rw [hg' (Product.compose g'' k'), ←Product.comp_assoc, hfg'', Product.id_comp]
+
+
+theorem Product.Prod
+    : ∃ P : @Product.object α β (α × β), IsProduct P := by
+  unfold IsProduct
+  let P := @Product.object.mk α β (α × β) Prod.fst Prod.snd
+  use P
+  intro γ' D
+  let f : γ' → α × β :=
+    fun c => ⟨ D.π₀ c , D.π₁ c ⟩
+  let k : Product.arrow D P := by
+    apply Product.arrow.mk f
+    { constructor
+      { funext x
+        unfold P f
+        simp }
+      { funext x
+        unfold P f
+        simp } }
+  use k
+  intro k'
+  let _ := k.hom
+  let _ := k'.hom
+  let heπ₀ : P.π₀ ∘ k.arr = P.π₀ ∘ k'.arr := k.hom.left.symm.trans k'.hom.left
+  let heπ₁ : P.π₁ ∘ k.arr = P.π₁ ∘ k'.arr := k.hom.right.symm.trans k'.hom.right
+  unfold P
+  let h : k.arr = k'.arr := by
+    funext x
+    let he1 := congr_fun heπ₀ x
+    let he2 := congr_fun heπ₁ x
+    unfold P at he1 he2
+    simp at he1 he2
+    let result := congr_arg₂ Prod.mk he1 he2
+    exact result
+  obtain ⟨ x, y ⟩ := k
+  { obtain ⟨x', _⟩ := k'
+    { simp
+      exact h } }
