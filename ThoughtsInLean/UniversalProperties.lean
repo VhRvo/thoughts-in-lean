@@ -51,6 +51,6 @@ theorem Product.Prod
   funext x
   let heπ₀ : P.π₀ ∘ f = P.π₀ ∘ arr' := k.hom.left.symm.trans hom.left
   let heπ₁ : P.π₁ ∘ f = P.π₁ ∘ arr' := k.hom.right.symm.trans hom.right
-  let he1 := congr_fun heπ₀ x
-  let he2 := congr_fun heπ₁ x
+  let he1 : (P.π₀ ∘ f) x = (P.π₀ ∘ arr') x := congr_fun heπ₀ x
+  let he2 : (P.π₁ ∘ f) x = (P.π₁ ∘ arr') x := congr_fun heπ₁ x
   exact congr_arg₂ Prod.mk he1 he2
