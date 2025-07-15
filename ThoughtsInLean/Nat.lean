@@ -13,4 +13,18 @@ def natRec (n : Nat) (P : Nat → Prop) (p : (x : Nat) → @Nat.below P x → P 
   --    let h₂ := p n'.succ h₁
   --    p n'.succ (PProd.mk h₁ _)
 
-theorem Nat.acyclic (x : Nat) : x ≠ .succ (.succ x) := sorry
+theorem Nat.acyclic₁  (n : Nat) (h : n = .succ n) : False :=
+  match n, h with
+  | .zero, h => Nat.noConfusion h
+  | .succ n', h' => Nat.acyclic₁ n' (Nat.succ.inj h')
+
+theorem Nat.acyclic₁' (x : Nat) (h : x = .succ x) : False :=
+  nomatch h
+
+theorem Nat.acyclic₂ (n : Nat) (h : n = .succ (.succ n)) : False :=
+  match n, h with
+  | .zero, h => Nat.noConfusion h
+  | .succ n', h' => Nat.acyclic₂ n' (Nat.succ.inj h')
+
+theorem Nat.acyclic₂' (x : Nat) (h : x = .succ (.succ x)) : False :=
+  nomatch h

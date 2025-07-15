@@ -4,8 +4,13 @@ inductive Even : Nat → Prop where
 | zero : Even 0
 | succ : {n : Nat} → Even n → Even (n + 2)
 
-theorem not_even (h : Even 1) : False :=
+theorem one_not_even (h : Even 1) : False :=
   nomatch h
+
+theorem three_not_even (h : Even 3) : False :=
+  nomatch h
+
+-- #print three_not_even.
 
 theorem not_even.tactic (h : Even 1) : False := by
   cases h

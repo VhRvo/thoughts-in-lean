@@ -4,6 +4,26 @@
 set_option pp.proofs true
 -- set_option inductive.autoPromoteIndices false
 
+def subst {α} {a b : α} (motive : α → Sort u) (h : a = b) (p : motive a) : motive b :=
+  match b, h with
+  | .(a), Eq.refl a => p
+
+def subst₁ {α β} {a b : α} (f : α → β) (h : a = b) : f a = f b :=
+  match b, h with
+  | .(a), Eq.refl a => Eq.refl (f a)
+
+def subst₂ {α β γ} {a₁ a₂ : α} {b₁ b₂ : β} (f : α → β → γ) (h₁ : a₁ = a₂) (h₂ : b₁ = b₂) : f a₁ b₂ = f a₂ b₂ :=
+  match a₂, h₁ with
+  | .(a₁), Eq.refl a₁ =>
+    match b₂, h₂ with
+    | .(b₁), Eq.refl b₁ =>
+      Eq.refl (f a₁ b₁)
+
+def subst₃ {α β} {f₁ f₂ : α → β} {a : α} (h : f₁ = f₂) : f₁ a = f₂ a :=
+  match f₂, h with
+  | .(f₁), Eq.refl f₁ =>
+    Eq.refl (f₁ a)
+
 def symm (h : a = b) : b = a :=
   match b, h with
   | .(a), Eq.refl a => Eq.refl a
